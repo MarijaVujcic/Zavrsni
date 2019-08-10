@@ -1,22 +1,17 @@
-
-#scene graph- na njoj se nalaze svi objekti koje koristimo
-
+from panda3d.core import loadPrcFile
+if __debug__:
+    loadPrcFile("Configuration/configuration.prc")
 from direct.showbase.ShowBase import ShowBase
+from direct.actor.Actor import Actor
 
-
-class MyApp(ShowBase):
+class ShootEm(ShowBase):
 
     def __init__(self):
         ShowBase.__init__(self)
 
-        # Load the environment model.
-        self.scene = self.loader.loadModel("models/environment")
-        # Reparent the model to render.
-        self.scene.reparentTo(self.render)
-        # Apply scale and position transforms on the model.
-        self.scene.setScale(0.25, 0.25, 0.25)
-        self.scene.setPos(-8, 42, 0)
+    def loadMainSpaceship(self):
 
 
-app = MyApp()
+
+app = ShootEm()
 app.run()
