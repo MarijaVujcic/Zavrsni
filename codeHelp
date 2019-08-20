@@ -1,0 +1,37 @@
+  # cubeMap = self.loader.loadCubeMap('Assets/tex/skycube_#.exr')
+       # self.sphere = self.loader.loadModel('Assets/skybox.egg')
+       # self.sphere.setTexGen(TextureStage.getDefault(), TexGenAttrib.MWorldPosition)
+       # self.sphere.setTexProjector(TextureStage.getDefault(), self.render, self.sphere)
+       # self.sphere.setTexPos(TextureStage.getDefault(), 0, 0, 0)
+       # self.sphere.setTexScale(TextureStage.getDefault(), .5)
+
+       # self.sphere.setTexture(cubeMap)
+       # self.sphere.setLightOff()
+        # Tell the sphere to ignore the lighting.
+
+        #self.sphere.setScale(1000)
+        # Increase the scale of the sphere so it will be larger than the scene.
+
+        #self.sphere.reparentTo(self.render)
+        # Reparent the sphere to render so you can see it.
+
+       # result = self.sphere.writeBamFile("SkySphere.bam")
+        # Save out the bam file.
+        #print(result)
+
+
+from direct.showbase.ShowBase import ShowBase
+
+class Game(ShowBase):
+    def __init__(self):
+        ShowBase.__init__(self)
+        self.skysphere = self.loader.loadModel("SkySphere.bam")
+        self.skysphere.setBin('background', 1)
+        self.skysphere.setDepthWrite(0)
+        self.skysphere.reparentTo(self.render)
+
+       # self.accept("escape", sys.exit)
+
+
+game = Game()
+game.run()
