@@ -22,22 +22,10 @@ class Game(ShowBase):
             pos=(0, 0, 0),
             frameColor=(0, 0, 0, 0))
         self.textscale = 0.15
-        self.title = DirectLabel(
-            scale=self.textscale,
-            pos=(0.0, 0.0, base.a2dTop - self.textscale),
-            frameColor=(0, 0, 0, 0),
-            text="aspect ratio sample",
-            text_align=TextNode.ACenter,
-            text_fg=(1, 1, 1, 1))
-        self.title.setTransparency(1)
-        self.title.reparentTo(self.frameMain)
-
-        # create a sample exit button
         self.btnStart = DirectButton(
             scale=(0.25, 0.25, 0.25),
             text="Start",
-            # position on the window
-            pos=(-1, 0, .55),
+            pos=(-1, 1, .40),
             command=lambda: self.gameStart(),
             rolloverSound=None,
             clickSound=None)
@@ -45,8 +33,7 @@ class Game(ShowBase):
         self.btnStart.reparentTo(self.frameMain)
         self.btnExit = DirectButton(scale=(0.25, 0.25, 0.25),
             text="Exit",
-            # position on the window
-            pos=(0, 0, .40),
+            pos=(1, 1, .40),
             command=lambda: sys.exit(),
             rolloverSound=None,
             clickSound=None)
@@ -118,31 +105,17 @@ class Game(ShowBase):
             self.camera.setPos(self.spaceship.getX() + 10, self.spaceship.getY() + 10, 2)
             self.camLens.setFov(80)
 
-            # this variable will set an offset to the node the cam is attached to
-            # and the point the camera looks at. By default the camera will look
-            # directly at the node it is attached to
             self.lookatOffset = Vec3(self.spaceship.getX(),self.spaceship.getY(), self.spaceship.getZ())
-            # the next two vars will set the min and max distance the cam can have
-            # to the node it is attached to
+
             self.maxCamDistance = 25
             self.minCamDistance = 25
-            # the initial cam distance
             self.camDistance = (self.maxCamDistance - self.minCamDistance) / 2.0 + self.minCamDistance
-            # the next two vars set the min and max distance on the Z-Axis to the
-            # node the cam is attached to
             self.maxCamHeightDist = 25
             self.minCamHeightDist = 25
-            # the average camera height
             self.camHeightAvg = (self.maxCamHeightDist - self.minCamHeightDist) / 2.0 + self.minCamHeightDist
-            # the average camera height
             self.camHeightAvg = (self.maxCamHeightDist - self.minCamHeightDist) / 2.0 + self.minCamHeightDist
-            # the initial cam height
             self.camHeight = self.camHeightAvg
-            # a time to keep the cam zoom at a specific speed independent of
-            # current framerate
             self.camElapsed = 0.0
-            # an invisible object which will fly above the player and will be used to
-            # track the camera on it
             self.camFloater = NodePath(PandaNode("playerCamFloater"))
             self.camFloater.reparentTo(self.render)
 
@@ -158,24 +131,15 @@ class Game(ShowBase):
         if self.keyMap["right"] != 0:
             self.spaceship.setH(self.spaceship.getH() - 300 * globalClock.getDt())
         if self.keyMap["forward"] != 0:
-            self.spaceship.setY(self.spaceship, -25 * globalClock.getDt())
+            self.spaceship.setX(self.spaceship.getX() +1)
         if self.keyMap["backward"] !=0:
-            self.spaceship.setX(self.spaceship, 25 * globalClock.getDt())
-        if self.keyMap["up"] != 0:
-            self.spaceship.setZ(self.spaceship.getZ() + 25 * globalClock.getDt())
-        if self.keyMap["down"] != 0:
-            self.spaceship.setZ(self.spaceship.getZ() - 25 * globalClock.getDt())
-
+            self.spaceship.setX(self.spaceship.getX() - 1)
+   
         return task.cont
 
     def update(self, task):
         dt = globalClock.getDt()
         self.world.doPhysics(dt)
-
-        # result = self.world.rayTestAll(
-        #    self.camera.getPos(),
-        #    )
-
         return task.cont
 
     def zoom(self, zoomIn):
@@ -189,29 +153,21 @@ class Game(ShowBase):
             self.acceptOnce("-", self.zoom, [False])
 
     def updateCam(self, task):
-        """This function will check the min and max distance of the camera to
-        the defined model and will correct the position if the cam is to close
-        or to far away"""
 
-        # Camera Movement Updates
         camvec = self.spaceship.getPos() - self.camera.getPos()
         camvec.setZ(0)
         camdist = camvec.length()
         camvec.normalize()
 
-        # If far from player start following
         if camdist > self.maxCamDistance:
             self.camera.setPos(self.camera.getPos() + camvec * (camdist - self.maxCamDistance))
             camdist = self.maxCamDistance
 
-        # If player to close move cam backwards
         if camdist < self.minCamDistance:
             self.camera.setPos(self.camera.getPos() - camvec * (self.minCamDistance - camdist))
             camdist = self.minCamDistance
 
-        # get the cameras current offset to the player model on the z-axis
         offsetZ = self.camera.getZ() - self.spaceship.getZ()
-        # check if the camera is within the min and max z-axis offset
         if offsetZ < self.minCamHeightDist:
             self.camera.setZ(self.spaceship.getZ() + self.minCamHeightDist)
             offsetZ = self.minCamHeightDist
@@ -220,25 +176,16 @@ class Game(ShowBase):
             offsetZ = self.maxCamHeightDist
 
         if offsetZ != self.camHeightAvg:
-            # if we are not moving up or down, set the cam to an average position
             if offsetZ != self.camHeightAvg:
                 if offsetZ > self.camHeightAvg:
-                    # the cam is higher then the average cam height above the player
-                    # so move it slowly down
                     self.camera.setZ(self.camera.getZ() - 5 * globalClock.getDt())
                     newOffsetZ = self.camera.getZ() - self.spaceship.getZ()
-                    # check if the cam has reached the desired offset
                     if newOffsetZ < self.camHeightAvg:
-                        # set the cam z position to exactly the desired offset
                         self.camera.setZ(self.spaceship.getZ() + self.camHeightAvg)
                 else:
-                    # the cam is lower then the average cam height above the player
-                    # so move it slowly up
                     self.camera.setZ(self.camera.getZ() + 5 * globalClock.getDt())
                     newOffsetZ = self.camera.getZ() - self.spaceship.getZ()
-                    # check if the cam has reached the desired offset
                     if newOffsetZ > self.camHeightAvg:
-                        # set the cam z position to exactly the desired offset
                         self.camera.setZ(self.spaceship.getZ() + self.camHeightAvg)
 
         if self.keyMap["center"]:
@@ -249,8 +196,6 @@ class Game(ShowBase):
         self.camFloater.setY(self.spaceship.getY() + self.lookatOffset.getY())
         self.camFloater.setZ(self.spaceship.getZ() + self.lookatOffset.getZ())
         self.camera.lookAt(self.spaceship)
-
-        # continue the task until it got manually stopped
         return task.cont
 
 
